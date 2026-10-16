@@ -106,8 +106,9 @@ h1,h2,h3,.disp{font-family:var(--f-disp);line-height:1.05;letter-spacing:-.01em}
 .demo-menu h3{font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
 .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .prod{border:2.5px solid var(--navy);border-radius:14px;background:var(--cream);
-  padding:12px 8px;cursor:pointer;text-align:center;transition:transform .12s,box-shadow .12s;
-  font-family:var(--f-body)}
+  padding:10px 8px 12px;cursor:pointer;text-align:center;transition:transform .12s,box-shadow .12s;
+  font-family:var(--f-body);overflow:hidden}
+.prod img{width:100%;height:96px;object-fit:cover;border-radius:9px;border:2px solid var(--navy);display:block;margin-bottom:8px}
 .prod:hover{transform:translateY(-3px);box-shadow:3px 5px 0 var(--navy)}
 .prod:active{transform:scale(.94)}
 .prod .pn{font-weight:800;font-size:.86rem;display:block;margin-bottom:2px}
@@ -788,12 +789,12 @@ footer ul a:hover{color:var(--orange)}
 
   /* ---------- DEMO POS ---------- */
   var PRODUCTS = [
-    {name:"Kopi Tubruk", price:8000},
-    {name:"Es Teh Manis", price:5000},
-    {name:"Indomie Goreng", price:12000},
-    {name:"Gorengan", price:2000},
-    {name:"Nasi Bungkus", price:10000},
-    {name:"Teh Hangat", price:4000}
+    {name:"Kopi Tubruk", price:8000, img:"assets/produk/kopi-tubruk.jpg"},
+    {name:"Es Teh Manis", price:5000, img:"assets/produk/es-teh-manis.jpg"},
+    {name:"Indomie Goreng", price:12000, img:"assets/produk/indomie-goreng.jpg"},
+    {name:"Gorengan", price:2000, img:"assets/produk/pisang-goreng.jpg"},
+    {name:"Nasi Bungkus", price:10000, img:"assets/produk/nasi-goreng.jpg"},
+    {name:"Teh Hangat", price:4000, img:"assets/produk/teh-manis-panas.jpg"}
   ];
   var cart = {}; // idx -> qty
   var grid = document.getElementById("prodGrid"),
@@ -808,7 +809,7 @@ footer ul a:hover{color:var(--orange)}
     var b = document.createElement("button");
     b.className = "prod"; b.type = "button";
     b.setAttribute("aria-label", "Tambah " + p.name + " " + rp(p.price));
-    b.innerHTML = '<span class="pn">' + p.name + '</span><span class="pp">' + rp(p.price) + '</span>';
+    b.innerHTML = '<img src="' + p.img + '" alt="' + p.name + '" loading="lazy"><span class="pn">' + p.name + '</span><span class="pp">' + rp(p.price) + '</span>';
     b.addEventListener("click", function(){
       cart[i] = (cart[i] || 0) + 1;
       if(!reduceMotion){ b.classList.remove("pulse"); void b.offsetWidth; b.classList.add("pulse"); }
