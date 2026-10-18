@@ -626,25 +626,58 @@ footer ul a:hover{color:var(--orange)}
 
 <!-- ============ SOCIAL PROOF ============ -->
 <section class="proof" id="bukti">
-  <div class="wrap proof-in">
-    <div class="proof-stat">
-      <b>30+</b>
-      <span>Pemilik usaha<br>pakai KasirMan</span>
-    </div>
-    <div class="proof-stat">
-      <b>100%</b>
-      <span>Offline — jalan<br>tanpa internet</span>
+  <div class="wrap">
+    <p class="proof-title rv">Dipercaya warung-warung di seluruh Indonesia 🇮🇩</p>
+    <div class="proof-in">
+      <div class="proof-stat rv">
+        <b><span class="count" data-target="30">0</span>+</b>
+        <span>Pemilik usaha<br>pakai KasirMan</span>
+      </div>
+      <div class="proof-stat rv d1">
+        <b><span class="count" data-target="100">0</span>%</b>
+        <span>Offline — jalan<br>tanpa internet</span>
+      </div>
+      <div class="proof-stat rv d2">
+        <b><span class="count" data-target="7">0</span> hari</b>
+        <span>Trial gratis<br>tanpa kartu kredit</span>
+      </div>
     </div>
   </div>
 </section>
 <style>
-.proof{background:var(--navy);border-top:3px solid var(--navy);border-bottom:3px solid var(--navy);padding:36px 0}
-.proof-in{display:flex;justify-content:center;gap:56px;flex-wrap:wrap;text-align:center}
-.proof-stat b{display:block;font-family:'Varela Round',sans-serif;font-size:44px;color:#fff;line-height:1}
-.proof-stat b:last-child{color:var(--orange)}
-.proof-stat span{display:block;margin-top:8px;color:#c8d4ea;font-size:14px;line-height:1.5}
-@media(max-width:640px){.proof-in{gap:32px}.proof-stat b{font-size:34px}}
+.proof{background:var(--navy);border-top:3px solid var(--navy);border-bottom:3px solid var(--navy);padding:48px 0;position:relative;overflow:hidden}
+.proof::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(37,99,235,.25),transparent 60%),radial-gradient(ellipse at 80% 50%,rgba(249,115,22,.18),transparent 60%);pointer-events:none}
+.proof-title{text-align:center;color:#fff;font-family:'Varela Round',sans-serif;font-size:20px;margin:0 0 28px;position:relative}
+.proof-in{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;text-align:center;position:relative}
+.proof-stat{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);border-radius:20px;padding:28px 36px;min-width:190px;backdrop-filter:blur(4px);transition:transform .3s ease,border-color .3s ease}
+.proof-stat:hover{transform:translateY(-4px);border-color:var(--orange)}
+.proof-stat b{display:block;font-family:'Varela Round',sans-serif;font-size:46px;color:var(--orange);line-height:1}
+.proof-stat span{display:block;margin-top:10px;color:#c8d4ea;font-size:14px;line-height:1.5}
+@media(max-width:640px){.proof-in{gap:16px}.proof-stat{padding:20px 24px;min-width:140px}.proof-stat b{font-size:34px}}
 </style>
+<script>
+// Animasi hitung naik saat section terlihat
+(function(){
+  var done=false;
+  function animate(){
+    if(done) return; done=true;
+    document.querySelectorAll('.proof .count').forEach(function(el){
+      var target=parseInt(el.dataset.target,10), start=null, dur=1400;
+      function step(ts){
+        if(!start) start=ts;
+        var p=Math.min((ts-start)/dur,1), e=1-Math.pow(1-p,3);
+        el.textContent=Math.round(target*e);
+        if(p<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  var sec=document.getElementById('bukti');
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animate();}});},{threshold:.3}).observe(sec);
+  } else { animate(); }
+})();
+</script>
 
 <!-- ============ MASALAH ============ -->
 <section class="sec" id="masalah">
