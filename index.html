@@ -633,29 +633,6 @@ footer ul a:hover{color:var(--orange)}
   <div class="proof-stars" aria-hidden="true"></div>
   <div class="wrap">
     <p class="proof-title rv">Dipercaya warung-warung di seluruh Indonesia 🇮🇩</p>
-    <div class="proof-in">
-      <div class="proof-stat rv" data-tilt>
-        <div class="proof-ring"></div>
-        <div class="proof-ico float">🏪</div>
-        <b><span class="count" data-target="30">0</span>+</b>
-        <span>Pemilik usaha<br>pakai KasirMan</span>
-        <div class="proof-bar"><i style="--w:75%"></i></div>
-      </div>
-      <div class="proof-stat rv d1" data-tilt>
-        <div class="proof-ring"></div>
-        <div class="proof-ico float" style="animation-delay:.4s">📴</div>
-        <b><span class="count" data-target="100">0</span>%</b>
-        <span>Offline — jalan<br>tanpa internet</span>
-        <div class="proof-bar"><i style="--w:100%"></i></div>
-      </div>
-      <div class="proof-stat rv d2" data-tilt>
-        <div class="proof-ring"></div>
-        <div class="proof-ico float" style="animation-delay:.8s">🎁</div>
-        <b><span class="count" data-target="7">0</span> hari</b>
-        <span>Trial gratis<br>tanpa kartu kredit</span>
-        <div class="proof-bar"><i style="--w:50%"></i></div>
-      </div>
-    </div>
     <p class="proof-sub rv">Cocok untuk semua jenis usaha:</p>
     <div class="biz-cloud rv" id="bizCloud">
       <span>🏪 Warung Kelontong</span><span>☕ Warkop & Kopi</span><span>👕 Laundry</span><span>💈 Barbershop</span><span>🍜 Warteg & RM</span><span>💊 Apotek</span><span>👗 Boutique</span><span>💅 Salon</span><span>🔧 Bengkel</span><span>🍞 Bakery</span><span>📱 Konter HP</span><span>🐾 Petshop</span><span>🖨️ Fotokopi</span><span>🛒 Minimarket</span><span>🍰 Kue Basah</span><span>🧋 Boba & Minuman</span>
@@ -707,35 +684,7 @@ footer ul a:hover{color:var(--orange)}
   document.querySelectorAll('#bizCloud span').forEach(function(p,i){
     p.style.animationDelay=(0.5+i*0.06)+'s';
   });
-  function animate(){
-    if(done) return; done=true;
-    document.querySelectorAll('.proof .count').forEach(function(el){
-      var target=parseInt(el.dataset.target,10), start=null, dur=1400;
-      function step(ts){
-        if(!start) start=ts;
-        var p=Math.min((ts-start)/dur,1), e=1-Math.pow(1-p,3);
-        el.textContent=Math.round(target*e);
-        if(p<1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    });
-    document.querySelectorAll('.proof-stat').forEach(function(s,i){
-      setTimeout(function(){s.classList.add('in');}, i*200);
-    });
-  }
-  // Efek tilt 3D mengikuti mouse
-  document.querySelectorAll('[data-tilt]').forEach(function(card){
-    card.addEventListener('mousemove',function(e){
-      var r=card.getBoundingClientRect(),
-          x=(e.clientX-r.left)/r.width-.5,
-          y=(e.clientY-r.top)/r.height-.5;
-      card.style.transform='perspective(600px) rotateY('+(x*10)+'deg) rotateX('+(-y*10)+'deg) translateY(-4px)';
-    });
-    card.addEventListener('mouseleave',function(){card.style.transform='';});
-  });
-  if('IntersectionObserver' in window){
-    new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animate();}});},{threshold:.25}).observe(sec);
-  } else { animate(); }
+  // Tidak ada animasi count lagi (kartu stat dihapus)
 })();
 </script>
 
