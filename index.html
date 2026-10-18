@@ -1435,35 +1435,41 @@ footer ul a:hover{color:var(--orange)}
 
   /* ---- tangkap token recovery/magiclink dari URL ---- */
   function cleanUrl(){ try{ history.replaceState(null, "", location.pathname); }catch(e){} }
+  function showFatal(msg){
+    openModal(); showView("main"); switchTab("login");
+    showErr(authErr, msg);
+  }
   function handleAuthRedirect(){
     var h = location.hash || "", q = location.search || "";
     var get = function(s, re){ var m = s.match(re); return m ? decodeURIComponent(m[1]) : null; };
     var type = get(h, /[&#]type=([^&]+)/) || get(q, /[?&]type=([^&]+)/);
-    if(type !== "recovery" && type !== "magiclink") return false;
     var accessToken = get(h, /[#&]access_token=([^&]+)/);
-    var tokenHash = get(q, /[?&]token_hash=([^&]+)/);
+    var tokenHash = get(q, /[?&]token_hash=([^&]+)/) || get(h, /[#&]token_hash=([^&]+)/);
+    var code = get(q, /[?&]code=([^&]+)/);
+    if(!type && !accessToken && !tokenHash && !code) return false;
+    if(!type) type = "recovery";
+    cleanUrl();
     if(accessToken){
       session = {access_token: accessToken, user: {}};
-      cleanUrl();
       if(type === "recovery"){ openModal(); showView("resetPw"); }
       else {
         jreq("/auth/v1/user").then(function(u){ session.user = u; afterLogin(session); },
-          function(){ afterLogin(session); });
+          function(){ showFatal("Link login sudah kedaluwarsa atau sudah dipakai. Minta link baru."); });
       }
       return true;
     }
     if(tokenHash){
       jreq("/auth/v1/verify", {method:"POST", body:{token_hash: tokenHash, type: type}})
         .then(function(d){
-          cleanUrl();
-          if(!d){ throw new Error("verifikasi gagal"); }
+          if(!d || !d.access_token) throw new Error("bad");
           if(type === "recovery"){ saveSession(d); openModal(); showView("resetPw"); }
           else afterLogin(d);
         })
-        .catch(function(){ cleanUrl(); });
+        .catch(function(){ showFatal("Link sudah dipakai atau kedaluwarsa. Minta link baru lewat Lupa Password."); });
       return true;
     }
-    return false;
+    showFatal("Format link tidak dikenali. Minta link baru lewat Lupa Password.");
+    return true;
   }
 
   /* ---- restore session saat halaman dibuka ---- */
