@@ -426,6 +426,9 @@ footer ul a:hover{color:var(--orange)}
 .auth-err{display:none;background:var(--red-soft);border:2px solid var(--red);color:var(--red-deep);
   border-radius:12px;padding:10px 14px;font-weight:700;font-size:.88rem;margin-bottom:14px}
 .auth-err.show{display:block}
+.auth-ok{display:none;background:var(--green-soft);border:2px solid var(--green);color:#14532d;
+  border-radius:12px;padding:10px 14px;font-weight:700;font-size:.88rem;margin-bottom:14px}
+.auth-ok.show{display:block}
 .auth-note{font-size:.85rem;color:var(--muted);font-weight:600;text-align:center;margin-top:12px}
 .otp-row{display:flex;gap:7px;justify-content:center;margin:16px 0}
 .otp-row input{width:46px;height:56px;text-align:center;font-size:1.5rem;font-family:var(--f-disp);
@@ -922,6 +925,7 @@ footer ul a:hover{color:var(--orange)}
           <input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
         <button type="submit" class="btn" id="liBtn" style="width:100%;justify-content:center">Masuk</button>
       </form>
+      <p class="auth-note"><button type="button" class="linklike" id="forgotLink">Lupa password?</button></p>
       <form id="regForm" hidden novalidate>
         <div class="field"><label for="rgShop">Nama Toko</label>
           <input id="rgShop" type="text" autocomplete="organization" placeholder="Warung Barokah" required></div>
@@ -944,6 +948,31 @@ footer ul a:hover{color:var(--orange)}
         <button type="submit" class="btn" id="otpBtn" style="width:100%;justify-content:center">Verifikasi</button>
       </form>
       <p class="auth-note">Nggak dapat kode? <button type="button" class="linklike" id="otpResend">Kirim ulang</button></p>
+    </div>
+    <div id="authForgot" hidden>
+      <h2>Lupa password</h2>
+      <p class="auth-sub">Masukkan email akunmu, kami kirim link reset ke sana.</p>
+      <div class="auth-err" id="fgErr"></div>
+      <div class="auth-ok" id="fgOk"></div>
+      <form id="fgForm" novalidate>
+        <div class="field"><label for="fgEmail">Email</label>
+          <input id="fgEmail" type="email" autocomplete="email" placeholder="kamu@toko.com" required></div>
+        <button type="submit" class="btn" id="fgBtn" style="width:100%;justify-content:center">Kirim Link Reset</button>
+      </form>
+      <p class="auth-note"><button type="button" class="linklike" id="fgBack">Kembali masuk</button></p>
+    </div>
+    <div id="authResetPw" hidden>
+      <h2>Buat password baru</h2>
+      <p class="auth-sub">Masukkan password baru buat akunmu.</p>
+      <div class="auth-err" id="rpErr"></div>
+      <div class="auth-ok" id="rpOk"></div>
+      <form id="rpForm" novalidate>
+        <div class="field"><label for="rpPass">Password baru</label>
+          <input id="rpPass" type="password" autocomplete="new-password" placeholder="Minimal 6 karakter" required></div>
+        <div class="field"><label for="rpPass2">Ulangi password baru</label>
+          <input id="rpPass2" type="password" autocomplete="new-password" placeholder="Ketik ulang" required></div>
+        <button type="submit" class="btn" id="rpBtn" style="width:100%;justify-content:center">Simpan Password</button>
+      </form>
     </div>
   </div>
 </div>
@@ -1111,8 +1140,25 @@ footer ul a:hover{color:var(--orange)}
       otpForm = document.getElementById("otpForm"),
       otpRow = document.getElementById("otpRow"),
       otpResend = document.getElementById("otpResend"),
-      otpHint = document.getElementById("otpHint");
+      otpHint = document.getElementById("otpHint"),
+      authForgot = document.getElementById("authForgot"),
+      authResetPw = document.getElementById("authResetPw");
   var session = null, profile = null, sub = null, pendingEmail = "", pendingShop = "", resendTimer = null;
+  var VIEWS = null;
+  function views(){
+    if(!VIEWS) VIEWS = {main:authMain, otp:authOtp, forgot:authForgot, resetPw:authResetPw};
+    return VIEWS;
+  }
+  function showView(name){
+    var v = views();
+    for(var k in v) v[k].hidden = (k !== name);
+    hideErr(authErr); hideErr(otpErr);
+    var fe = document.getElementById("fgErr"), fo = document.getElementById("fgOk"),
+        re = document.getElementById("rpErr"), ro = document.getElementById("rpOk");
+    if(fe) hideErr(fe); if(fo){ fo.classList.remove("show"); }
+    if(re) hideErr(re); if(ro){ ro.classList.remove("show"); }
+  }
+  function showOk(el, msg){ el.textContent = msg; el.classList.add("show"); }
 
   function jreq(path, opt){
     opt = opt || {};
@@ -1144,7 +1190,7 @@ footer ul a:hover{color:var(--orange)}
 
   function openModal(tab){
     hideErr(authErr); hideErr(otpErr);
-    authMain.hidden = false; authOtp.hidden = true; pendingEmail = "";
+    showView("main"); pendingEmail = "";
     switchTab(tab || "login");
     overlay.classList.add("open");
     document.body.style.overflow = "hidden";
@@ -1238,7 +1284,7 @@ footer ul a:hover{color:var(--orange)}
   });
   function showOtpStep(email){
     pendingEmail = email;
-    authMain.hidden = true; authOtp.hidden = false; hideErr(otpErr);
+    showView("otp"); hideErr(otpErr);
     otpHint.textContent = "Kode 6 digit dikirim ke " + email + ". Cek juga folder Spam/Promosi.";
     otpInputs.forEach(function(x){ x.value = ""; });
     otpInputs[0].focus();
@@ -1350,8 +1396,79 @@ footer ul a:hover{color:var(--orange)}
       .catch(function(err){ showErr(otpErr, "Gagal kirim ulang: " + err.message); });
   });
 
+  /* ---- lupa password ---- */
+  document.getElementById("forgotLink").addEventListener("click", function(){ showView("forgot"); });
+  document.getElementById("fgBack").addEventListener("click", function(){ showView("main"); switchTab("login"); });
+  document.getElementById("fgForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var errEl = document.getElementById("fgErr"), okEl = document.getElementById("fgOk");
+    hideErr(errEl); okEl.classList.remove("show");
+    var email = document.getElementById("fgEmail").value.trim();
+    if(!email || !/.+@.+\..+/.test(email)){ showErr(errEl, "Email-nya belum valid."); return; }
+    var btn = document.getElementById("fgBtn"); busy(btn, true);
+    jreq("/auth/v1/recover", {method:"POST", body:{email:email}})
+      .then(function(){
+        busy(btn, false);
+        showOk(okEl, "Link reset dikirim ke " + email + ". Cek inbox (dan Spam/Promosi), lalu klik link-nya.");
+      })
+      .catch(function(err){ busy(btn, false); showErr(errEl, "Gagal kirim: " + err.message); });
+  });
+
+  /* ---- set password baru dari link email ---- */
+  document.getElementById("rpForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var errEl = document.getElementById("rpErr"), okEl = document.getElementById("rpOk");
+    hideErr(errEl); okEl.classList.remove("show");
+    var p1 = document.getElementById("rpPass").value,
+        p2 = document.getElementById("rpPass2").value;
+    if(p1.length < 6){ showErr(errEl, "Password minimal 6 karakter."); return; }
+    if(p1 !== p2){ showErr(errEl, "Ulangi password-nya belum sama."); return; }
+    var btn = document.getElementById("rpBtn"); busy(btn, true);
+    jreq("/auth/v1/user", {method:"PUT", body:{password:p1}})
+      .then(function(){
+        busy(btn, false);
+        showOk(okEl, "Password berhasil diganti. Silakan masuk pakai password baru.");
+        setTimeout(function(){ showView("main"); switchTab("login"); }, 1800);
+      })
+      .catch(function(err){ busy(btn, false); showErr(errEl, "Gagal simpan: " + err.message); });
+  });
+
+  /* ---- tangkap token recovery/magiclink dari URL ---- */
+  function cleanUrl(){ try{ history.replaceState(null, "", location.pathname); }catch(e){} }
+  function handleAuthRedirect(){
+    var h = location.hash || "", q = location.search || "";
+    var get = function(s, re){ var m = s.match(re); return m ? decodeURIComponent(m[1]) : null; };
+    var type = get(h, /[&#]type=([^&]+)/) || get(q, /[?&]type=([^&]+)/);
+    if(type !== "recovery" && type !== "magiclink") return false;
+    var accessToken = get(h, /[#&]access_token=([^&]+)/);
+    var tokenHash = get(q, /[?&]token_hash=([^&]+)/);
+    if(accessToken){
+      session = {access_token: accessToken, user: {}};
+      cleanUrl();
+      if(type === "recovery"){ openModal(); showView("resetPw"); }
+      else {
+        jreq("/auth/v1/user").then(function(u){ session.user = u; afterLogin(session); },
+          function(){ afterLogin(session); });
+      }
+      return true;
+    }
+    if(tokenHash){
+      jreq("/auth/v1/verify", {method:"POST", body:{token_hash: tokenHash, type: type}})
+        .then(function(d){
+          cleanUrl();
+          if(!d){ throw new Error("verifikasi gagal"); }
+          if(type === "recovery"){ saveSession(d); openModal(); showView("resetPw"); }
+          else afterLogin(d);
+        })
+        .catch(function(){ cleanUrl(); });
+      return true;
+    }
+    return false;
+  }
+
   /* ---- restore session saat halaman dibuka ---- */
   (function init(){
+    if(handleAuthRedirect()) return;
     var s = loadSession();
     if(!s || !s.access_token){ renderAuthBtn(); return; }
     session = s;
