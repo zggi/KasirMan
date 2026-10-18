@@ -403,6 +403,49 @@ footer ul a:hover{color:var(--orange)}
   .rv{opacity:1;transform:none}
 }
 </style>
+/* ============ AUTH (login/daftar) ============ */
+.acct-wrap{position:relative}
+.auth-overlay{position:fixed;inset:0;z-index:200;background:rgba(10,31,68,.55);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px}
+.auth-overlay.open{display:flex}
+.auth-card{background:var(--paper);border:3px solid var(--navy);border-radius:var(--r);
+  box-shadow:8px 8px 0 var(--navy);width:min(430px,100%);padding:28px 26px;position:relative;max-height:92vh;overflow:auto}
+.auth-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:2px solid var(--navy);
+  background:#fff;border-radius:50%;font-weight:900;cursor:pointer;color:var(--navy);font-size:.95rem;line-height:1}
+.auth-close:hover{background:var(--red-soft)}
+.auth-card h2{font-size:1.55rem;margin-bottom:4px}
+.auth-sub{color:var(--muted);font-size:.92rem;font-weight:600;margin-bottom:4px}
+.auth-tabs{display:flex;background:var(--cream);border:2px solid var(--navy);border-radius:40px;padding:4px;margin:16px 0;gap:4px}
+.auth-tabs button{flex:1;border:0;background:none;font-family:var(--f-disp);font-weight:600;font-size:1rem;
+  padding:10px;border-radius:30px;cursor:pointer;color:var(--navy)}
+.auth-tabs button.on{background:var(--navy);color:#fff}
+.field{margin-bottom:13px}
+.field label{display:block;font-weight:800;font-size:.85rem;margin-bottom:6px;color:var(--navy)}
+.field input{width:100%;border:2px solid var(--navy);border-radius:12px;padding:12px 14px;
+  font-family:var(--f-body);font-size:1rem;background:#fff;color:var(--ink)}
+.field input:focus{outline:3px solid var(--sky);outline-offset:1px}
+.auth-err{display:none;background:var(--red-soft);border:2px solid var(--red);color:var(--red-deep);
+  border-radius:12px;padding:10px 14px;font-weight:700;font-size:.88rem;margin-bottom:14px}
+.auth-err.show{display:block}
+.auth-note{font-size:.85rem;color:var(--muted);font-weight:600;text-align:center;margin-top:12px}
+.otp-row{display:flex;gap:7px;justify-content:center;margin:16px 0}
+.otp-row input{width:46px;height:56px;text-align:center;font-size:1.5rem;font-family:var(--f-disp);
+  border:2px solid var(--navy);border-radius:12px;background:#fff;color:var(--ink)}
+.otp-row input:focus{outline:3px solid var(--sky);outline-offset:1px}
+.linklike{background:none;border:0;color:var(--blue-deep);font-weight:800;cursor:pointer;
+  font-family:var(--f-body);font-size:.9rem;text-decoration:underline;padding:0}
+.linklike:disabled{color:var(--muted);text-decoration:none;cursor:default}
+.acct-pop{position:absolute;top:calc(100% + 12px);right:0;background:#fff;border:3px solid var(--navy);
+  border-radius:16px;box-shadow:var(--sh-sm);width:290px;padding:18px;display:none;z-index:210;text-align:left}
+.acct-pop.open{display:block}
+.acct-pop .shop{font-family:var(--f-disp);font-weight:700;font-size:1.1rem;color:var(--navy)}
+.acct-pop .mail{font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:10px;word-break:break-all}
+.acct-plan{display:flex;justify-content:space-between;align-items:center;background:var(--cream);
+  border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-weight:800;font-size:.9rem}
+.acct-plan .pill{background:var(--blue);color:#fff;border-radius:20px;padding:3px 12px;font-size:.78rem;font-family:var(--f-disp)}
+.acct-plan .pill.trial{background:var(--orange);color:var(--navy)}
+.acct-plan .pill.exp{background:var(--red);color:#fff}
+@media(max-width:640px){.acct-pop{position:fixed;top:76px;right:4%;left:4%;width:auto}}
 <noscript><style>.rv{opacity:1!important;transform:none!important}</style></noscript>
 <script type="application/ld+json">
 {
@@ -505,6 +548,10 @@ footer ul a:hover{color:var(--orange)}
       <a href="#faq">FAQ</a>
     </div>
     <a class="btn sm" href="#download">Download</a>
+    <div class="acct-wrap">
+      <button type="button" class="btn sm ghost" id="authBtn">Masuk</button>
+      <div class="acct-pop" id="acctPop" aria-live="polite"></div>
+    </div>
     <button type="button" class="burger" id="burger" aria-label="Buka menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
     </button>
@@ -856,6 +903,51 @@ footer ul a:hover{color:var(--orange)}
   </div>
 </footer>
 
+<!-- ============ AUTH MODAL ============ -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button type="button" class="auth-close" id="authClose" aria-label="Tutup">✕</button>
+    <div id="authMain">
+      <h2 id="authTitle">Masuk ke KasirMan</h2>
+      <p class="auth-sub">Kelola langganan tokomu dari mana aja.</p>
+      <div class="auth-tabs" id="authTabs">
+        <button type="button" class="on" data-tab="login">Masuk</button>
+        <button type="button" data-tab="register">Daftar</button>
+      </div>
+      <div class="auth-err" id="authErr"></div>
+      <form id="loginForm" novalidate>
+        <div class="field"><label for="liEmail">Email</label>
+          <input id="liEmail" type="email" autocomplete="email" placeholder="kamu@toko.com" required></div>
+        <div class="field"><label for="liPass">Password</label>
+          <input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••" required></div>
+        <button type="submit" class="btn" id="liBtn" style="width:100%;justify-content:center">Masuk</button>
+      </form>
+      <form id="regForm" hidden novalidate>
+        <div class="field"><label for="rgShop">Nama Toko</label>
+          <input id="rgShop" type="text" autocomplete="organization" placeholder="Warung Barokah" required></div>
+        <div class="field"><label for="rgEmail">Email</label>
+          <input id="rgEmail" type="email" autocomplete="email" placeholder="kamu@toko.com" required></div>
+        <div class="field"><label for="rgPass">Password</label>
+          <input id="rgPass" type="password" autocomplete="new-password" placeholder="Minimal 6 karakter" required></div>
+        <button type="submit" class="btn" id="rgBtn" style="width:100%;justify-content:center">Daftar &amp; Kirim Kode</button>
+        <p class="auth-note">Dapat trial 7 hari gratis otomatis setelah verifikasi.</p>
+      </form>
+    </div>
+    <div id="authOtp" hidden>
+      <h2>Cek email kamu</h2>
+      <p class="auth-sub" id="otpHint">Kode 6 digit dikirim ke email. Cek juga folder Spam/Promosi.</p>
+      <div class="auth-err" id="otpErr"></div>
+      <form id="otpForm" novalidate>
+        <div class="otp-row" id="otpRow">
+          <input inputmode="numeric" maxlength="1" aria-label="Digit 1"><input inputmode="numeric" maxlength="1" aria-label="Digit 2"><input inputmode="numeric" maxlength="1" aria-label="Digit 3"><input inputmode="numeric" maxlength="1" aria-label="Digit 4"><input inputmode="numeric" maxlength="1" aria-label="Digit 5"><input inputmode="numeric" maxlength="1" aria-label="Digit 6">
+        </div>
+        <button type="submit" class="btn" id="otpBtn" style="width:100%;justify-content:center">Verifikasi</button>
+      </form>
+      <p class="auth-note">Nggak dapat kode? <button type="button" class="linklike" id="otpResend">Kirim ulang</button></p>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -996,6 +1088,284 @@ footer ul a:hover{color:var(--orange)}
   });
 
   renderCart();
+})();
+</script>
+<script>
+/* ============ KASIRMAN WEB AUTH (Supabase, tanpa library eksternal) ============ */
+(function(){
+  "use strict";
+  var SB_URL = "https://wqyjgezczmkmhlmhcqvy.supabase.co";
+  var SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndxeWpnZXpjem1rbWhsbWhjcXZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyNDExODYsImV4cCI6MjEwNzgxNzE4Nn0.AsxK-eL051UwyhLWS59ftRC4scI1V5UDsRjgzTktzPo";
+  var LS_KEY = "kmweb_session";
+  var PLANS = {trial:"Trial", monthly:"Bulanan", semester:"Semester", yearly:"Tahunan"};
+
+  var overlay = document.getElementById("authOverlay"),
+      authBtn = document.getElementById("authBtn"),
+      acctPop = document.getElementById("acctPop"),
+      authErr = document.getElementById("authErr"),
+      otpErr = document.getElementById("otpErr"),
+      authMain = document.getElementById("authMain"),
+      authOtp = document.getElementById("authOtp"),
+      loginForm = document.getElementById("loginForm"),
+      regForm = document.getElementById("regForm"),
+      otpForm = document.getElementById("otpForm"),
+      otpRow = document.getElementById("otpRow"),
+      otpResend = document.getElementById("otpResend"),
+      otpHint = document.getElementById("otpHint");
+  var session = null, profile = null, sub = null, pendingEmail = "", pendingShop = "", resendTimer = null;
+
+  function jreq(path, opt){
+    opt = opt || {};
+    var h = {"apikey": SB_ANON, "Content-Type": "application/json"};
+    if(session && session.access_token) h["Authorization"] = "Bearer " + session.access_token;
+    if(opt.headers) for(var k in opt.headers) h[k] = opt.headers[k];
+    return fetch(SB_URL + path, {
+      method: opt.method || "GET",
+      headers: h,
+      body: opt.body ? JSON.stringify(opt.body) : undefined
+    }).then(function(r){
+      return r.text().then(function(t){
+        var d = null; try{ d = t ? JSON.parse(t) : null; }catch(e){ d = {raw:t}; }
+        if(!r.ok){
+          var m = (d && (d.msg || d.message || d.error_description)) || ("HTTP " + r.status);
+          var err = new Error(m); err.status = r.status; err.data = d; throw err;
+        }
+        return d;
+      });
+    });
+  }
+  function saveSession(s){ session = s; try{ localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e){} }
+  function clearSession(){ session = null; profile = null; sub = null; try{ localStorage.removeItem(LS_KEY); }catch(e){} }
+  function loadSession(){ try{ var s = localStorage.getItem(LS_KEY); return s ? JSON.parse(s) : null; }catch(e){ return null; } }
+
+  function showErr(el, msg){ el.textContent = msg; el.classList.add("show"); }
+  function hideErr(el){ el.textContent = ""; el.classList.remove("show"); }
+  function busy(btn, on, label){ btn.disabled = on; btn.dataset.label = btn.dataset.label || btn.textContent; btn.textContent = on ? "Tunggu..." : (label || btn.dataset.label); }
+
+  function openModal(tab){
+    hideErr(authErr); hideErr(otpErr);
+    authMain.hidden = false; authOtp.hidden = true; pendingEmail = "";
+    switchTab(tab || "login");
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal(){
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    if(resendTimer){ clearInterval(resendTimer); resendTimer = null; }
+  }
+  function switchTab(tab){
+    var tabs = document.querySelectorAll("#authTabs button");
+    tabs.forEach(function(b){ b.classList.toggle("on", b.dataset.tab === tab); });
+    loginForm.hidden = tab !== "login";
+    regForm.hidden = tab !== "register";
+    document.getElementById("authTitle").textContent = tab === "login" ? "Masuk ke KasirMan" : "Daftar KasirMan";
+    hideErr(authErr);
+  }
+
+  function planInfo(){
+    if(!sub || !sub.is_active) return {label:"Nonaktif", cls:"exp", days:0};
+    var days = Math.ceil((new Date(sub.ends_at).getTime() - Date.now()) / 864e5);
+    if(days < 0) return {label:"Kedaluwarsa", cls:"exp", days:0};
+    return {label:(PLANS[sub.plan] || sub.plan), cls: sub.plan === "trial" ? "trial" : "", days:days};
+  }
+  function renderAuthBtn(){
+    if(session && profile){
+      var pi = planInfo();
+      var name = profile.shop_name || "Akun Saya";
+      authBtn.innerHTML = "";
+      var dot = document.createElement("span");
+      dot.style.cssText = "width:10px;height:10px;border-radius:50%;background:" + (pi.cls === "exp" ? "var(--red)" : "var(--green)") + ";display:inline-block";
+      authBtn.appendChild(dot);
+      authBtn.appendChild(document.createTextNode(name.length > 14 ? name.slice(0, 14) + "…" : name));
+    } else {
+      authBtn.textContent = "Masuk";
+    }
+  }
+  function renderAcctPop(){
+    if(!(session && profile)) return;
+    var pi = planInfo();
+    var left = pi.days > 0 ? "Sisa " + pi.days + " hari" : "—";
+    acctPop.innerHTML =
+      '<div class="shop"></div><div class="mail"></div>' +
+      '<div class="acct-plan"><span class="pill ' + pi.cls + '">' + pi.label + '</span><span>' + left + '</span></div>' +
+      '<button type="button" class="btn sm" id="logoutBtn" style="width:100%;justify-content:center">Keluar</button>';
+    acctPop.querySelector(".shop").textContent = profile.shop_name || "Akun Saya";
+    acctPop.querySelector(".mail").textContent = profile.email || (session.user && session.user.email) || "";
+    document.getElementById("logoutBtn").addEventListener("click", doLogout);
+  }
+
+  function loadProfile(){
+    if(!session || !session.user) return Promise.resolve();
+    var uid = session.user.id;
+    return jreq("/rest/v1/profiles?select=shop_name,email&id=eq." + uid).then(function(rows){
+      profile = (rows && rows[0]) || null;
+      return jreq("/rest/v1/subscriptions?select=plan,ends_at,is_active&user_id=eq." + uid);
+    }).then(function(rows){
+      sub = (rows && rows[0]) || null;
+      renderAuthBtn(); renderAcctPop();
+    }).catch(function(){ renderAuthBtn(); });
+  }
+  function afterLogin(s){
+    saveSession(s); closeModal(); renderAuthBtn();
+    loadProfile();
+  }
+
+  function doLogout(){
+    acctPop.classList.remove("open");
+    var done = function(){ clearSession(); renderAuthBtn(); acctPop.innerHTML = ""; };
+    if(session && session.access_token){
+      jreq("/auth/v1/logout", {method:"POST"}).then(done, done);
+    } else done();
+  }
+
+  /* ---- OTP ---- */
+  var otpInputs = Array.prototype.slice.call(otpRow.querySelectorAll("input"));
+  otpInputs.forEach(function(inp, i){
+    inp.addEventListener("input", function(){
+      inp.value = inp.value.replace(/\D/g, "").slice(0, 1);
+      if(inp.value && i < otpInputs.length - 1) otpInputs[i + 1].focus();
+    });
+    inp.addEventListener("keydown", function(e){
+      if(e.key === "Backspace" && !inp.value && i > 0) otpInputs[i - 1].focus();
+    });
+    inp.addEventListener("paste", function(e){
+      e.preventDefault();
+      var t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6);
+      t.split("").forEach(function(c, j){ if(otpInputs[j]) otpInputs[j].value = c; });
+      if(t.length) otpInputs[Math.min(t.length, 5)].focus();
+    });
+  });
+  function showOtpStep(email){
+    pendingEmail = email;
+    authMain.hidden = true; authOtp.hidden = false; hideErr(otpErr);
+    otpHint.textContent = "Kode 6 digit dikirim ke " + email + ". Cek juga folder Spam/Promosi.";
+    otpInputs.forEach(function(x){ x.value = ""; });
+    otpInputs[0].focus();
+    startResendCooldown();
+  }
+  function startResendCooldown(){
+    var s = 60;
+    otpResend.disabled = true;
+    otpResend.textContent = "Kirim ulang (" + s + ")";
+    if(resendTimer) clearInterval(resendTimer);
+    resendTimer = setInterval(function(){
+      s--;
+      if(s <= 0){ clearInterval(resendTimer); resendTimer = null; otpResend.disabled = false; otpResend.textContent = "Kirim ulang"; }
+      else otpResend.textContent = "Kirim ulang (" + s + ")";
+    }, 1000);
+  }
+
+  /* ---- events ---- */
+  document.getElementById("authClose").addEventListener("click", closeModal);
+  overlay.addEventListener("click", function(e){ if(e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape" && overlay.classList.contains("open")) closeModal(); });
+  document.querySelectorAll("#authTabs button").forEach(function(b){
+    b.addEventListener("click", function(){ switchTab(b.dataset.tab); });
+  });
+  authBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    if(session && profile){ acctPop.classList.toggle("open"); }
+    else openModal("login");
+  });
+  document.addEventListener("click", function(e){
+    if(!acctPop.contains(e.target) && e.target !== authBtn) acctPop.classList.remove("open");
+  });
+
+  loginForm.addEventListener("submit", function(e){
+    e.preventDefault(); hideErr(authErr);
+    var email = document.getElementById("liEmail").value.trim(),
+        pass = document.getElementById("liPass").value;
+    if(!email || !pass){ showErr(authErr, "Isi email dan password dulu."); return; }
+    var btn = document.getElementById("liBtn"); busy(btn, true);
+    jreq("/auth/v1/token?grant_type=password", {method:"POST", body:{email:email, password:pass}})
+      .then(afterLogin)
+      .catch(function(err){
+        busy(btn, false);
+        if(/not confirmed|not verified|confirm/i.test(err.message)){
+          showErr(authErr, "Email belum diverifikasi. Daftar ulang atau cek kode OTP di email kamu.");
+        } else if(err.status === 400){
+          showErr(authErr, "Email atau password salah.");
+        } else {
+          showErr(authErr, "Gagal masuk: " + err.message);
+        }
+      });
+  });
+
+  regForm.addEventListener("submit", function(e){
+    e.preventDefault(); hideErr(authErr);
+    var shop = document.getElementById("rgShop").value.trim(),
+        email = document.getElementById("rgEmail").value.trim(),
+        pass = document.getElementById("rgPass").value;
+    if(!shop){ showErr(authErr, "Isi nama tokomu dulu."); return; }
+    if(!email || !/.+@.+\..+/.test(email)){ showErr(authErr, "Email-nya belum valid."); return; }
+    if(pass.length < 6){ showErr(authErr, "Password minimal 6 karakter."); return; }
+    var btn = document.getElementById("rgBtn"); busy(btn, true);
+    pendingShop = shop;
+    jreq("/auth/v1/signup", {method:"POST", body:{email:email, password:pass}})
+      .then(function(d){
+        busy(btn, false);
+        if(d && d.session){ afterLogin(d.session); }
+        else showOtpStep(email);
+      })
+      .catch(function(err){
+        busy(btn, false);
+        if(/already registered|already exists|duplicate/i.test(err.message)){
+          showErr(authErr, "Email ini sudah terdaftar. Silakan masuk.");
+          switchTab("login");
+        } else {
+          showErr(authErr, "Gagal daftar: " + err.message);
+        }
+      });
+  });
+
+  otpForm.addEventListener("submit", function(e){
+    e.preventDefault(); hideErr(otpErr);
+    var code = otpInputs.map(function(x){ return x.value; }).join("");
+    if(code.length < 6){ showErr(otpErr, "Kode-nya 6 digit, belum lengkap."); return; }
+    var btn = document.getElementById("otpBtn"); busy(btn, true);
+    jreq("/auth/v1/verify", {method:"POST", body:{email:pendingEmail, token:code, type:"signup"}})
+      .then(function(d){
+        if(!(d && d.session)) throw new Error("Verifikasi gagal, coba lagi.");
+        saveSession(d.session);
+        var uid = d.session.user && d.session.user.id;
+        if(uid && pendingShop){
+          return jreq("/rest/v1/profiles?id=eq." + uid, {method:"PATCH", body:{shop_name:pendingShop}, headers:{"Prefer":"return=representation"}})
+            .then(function(){ return d.session; }, function(){ return d.session; });
+        }
+        return d.session;
+      })
+      .then(afterLogin)
+      .catch(function(err){
+        busy(btn, false);
+        showErr(otpErr, "Kode salah atau kedaluwarsa. Cek lagi atau kirim ulang.");
+      });
+  });
+
+  otpResend.addEventListener("click", function(){
+    if(!pendingEmail) return;
+    hideErr(otpErr);
+    jreq("/auth/v1/resend", {method:"POST", body:{email:pendingEmail, type:"signup"}})
+      .then(function(){ startResendCooldown(); })
+      .catch(function(err){ showErr(otpErr, "Gagal kirim ulang: " + err.message); });
+  });
+
+  /* ---- restore session saat halaman dibuka ---- */
+  (function init(){
+    var s = loadSession();
+    if(!s || !s.access_token){ renderAuthBtn(); return; }
+    session = s;
+    jreq("/auth/v1/user").then(function(u){
+      session.user = u;
+      return loadProfile();
+    }).catch(function(){
+      if(s.refresh_token){
+        jreq("/auth/v1/token?grant_type=refresh_token", {method:"POST", body:{refresh_token:s.refresh_token}})
+          .then(function(ns){ saveSession(ns); return loadProfile(); })
+          .catch(function(){ clearSession(); renderAuthBtn(); });
+      } else { clearSession(); renderAuthBtn(); }
+    });
+  })();
 })();
 </script>
 </body>
